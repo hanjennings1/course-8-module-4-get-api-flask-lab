@@ -1,161 +1,132 @@
-
 # Module Lab: Building RESTful GET APIs with Flask
+**Completed Sept 15, 2026**
+
+## Overview
+
+This is a Read-Only RESTful API built with Flask that serves a mock product catalog. It supports fetching all products, filtering by category, and retrieving a single product by ID. All responses are returned as JSON with appropriate HTTP status codes.
 
 ## Learning Goals
 
-- Implement RESTful API endpoints using Flask.
-- Handle HTTP GET methods to serve resource data.
-- Support query parameters and dynamic route segments.
-- Return consistent JSON responses using `jsonify()`.
-- Follow RESTful conventions in route structure and response formatting.
+- Implement RESTful API endpoints using Flask
+- Handle HTTP GET methods to serve resource data
+- Support query parameters and dynamic route segments
+- Return consistent JSON responses using `jsonify()`
+- Follow RESTful conventions in route structure and response formatting
 
-## Introduction
+## Project Structure
 
-In this lab, you will build a **Read-Only RESTful API** to serve a list of products. The API will allow users to:
-
-- Access a homepage route with a welcome message
-- Retrieve all products via `GET /products`
-- Fetch a specific product using `GET /products/<id>`
-- Filter products by category using a query string (`/products?category=books`)
-
-You’ll simulate a product catalog using an in-memory list of dictionaries, format all responses as JSON, and follow best practices for route design and error handling.
+```
+.
+├── app.py          # Flask app and route definitions
+├── data.py         # Mock product data
+├── test_app.py     # Pytest test suite
+├── Pipfile
+├── Pipfile.lock
+└── README.md
+```
 
 ## Setup Instructions
 
-### Fork and Clone the Repository
-
-1. Go to the provided GitHub repository link.
-2. Fork the repository to your GitHub account.
-3. Clone the forked repository to your local machine:
+### Clone the Repository
 
 ```bash
-git clone <repo-url>
-cd course-8-module-4-get-api-flask
+git clone https://github.com/hanjennings1/course-8-module-4-get-api-flask-lab.git
+cd course-8-module-4-get-api-flask-lab
 ```
 
 ### Install Dependencies
-
-Ensure Python is installed:
-
-```bash
-python --version
-```
-
-Install Flask and dependencies using pipenv:
 
 ```bash
 pipenv install
 pipenv shell
 ```
 
-Or with pip:
-
-```bash
-pip install flask
-```
-
-## Tasks
-
-### Task 1: Define the Problem
-
-You’re building a basic product catalog API. It should:
-
-- Display a welcome message at `/`
-- Serve all products with `GET /products`
-- Retrieve individual products via `GET /products/<id>`
-- Filter products by category using a query string (e.g. `/products?category=books`)
-
----
-
-### Task 2: Determine the Design
-
-The Flask API should:
-
-- Use `@app.route()` decorators with `methods=["GET"]`
-- Use `request.args.get()` to handle query parameters
-- Return all output using `jsonify()`
-- Return meaningful HTTP status codes (`200`, `404`)
-
----
-
-### Task 3: Develop the Code
-
-Create `app.py` and start with the following structure:
-
-```python
-from flask import Flask, jsonify, request
-
-app = Flask(__name__)
-
-# Mock data
-products = [
-    {"id": 1, "name": "Laptop", "price": 899.99, "category": "electronics"},
-    {"id": 2, "name": "Book", "price": 14.99, "category": "books"},
-    {"id": 3, "name": "Desk", "price": 199.99, "category": "furniture"},
-]
-
-# TODO: Implement homepage route that returns a welcome message
-# TODO: Implement GET /products route that returns all products or filters by category
-# TODO: Implement GET /products/<id> route that returns a product by ID or 404
-
-if __name__ == "__main__":
-    app.run(debug=True)
-```
-
----
-
-### Task 4: Test the API
-
-Start the Flask development server:
+### Run the Server
 
 ```bash
 python app.py
 ```
 
-Test your endpoints using your browser, Postman, or curl:
+The API runs at `http://localhost:5000` by default.
 
-- `GET http://localhost:5000/`
-- `GET http://localhost:5000/products`
-- `GET http://localhost:5000/products/2`
-- `GET http://localhost:5000/products?category=books`
+## API Endpoints
 
----
+### `GET /`
 
-## Best Practices
+Returns a welcome message.
 
-- Use plural nouns for collection routes (e.g., `/products`)
-- Normalize input (e.g., `.lower()`) when filtering by query string
-- Use `jsonify()` for all responses
-- Return:
-  - `200 OK` for successful GET requests
-  - `404 Not Found` if a product ID doesn’t exist
-- Include inline comments to explain your logic
+**Example response (200):**
+```json
+{
+  "message": "Welcome to the Product Catalog API!"
+}
+```
 
----
+### `GET /products`
 
-## Considerations
+Returns all products. Optionally filter by category using the `category` query parameter (case-insensitive).
 
-**1. Input Validation**
-- Handle invalid query parameters or IDs with a clear error message.
+**Example:** `GET /products?category=books`
 
-**2. Case Sensitivity in Filtering**
-- Normalize both category input and stored data to avoid mismatches.
+**Example response (200):**
+```json
+[
+  {
+    "id": 2,
+    "name": "Book",
+    "price": 14.99,
+    "category": "books"
+  }
+]
+```
 
-**3. Consistent Response Structure**
-- Ensure all responses follow the same JSON format.
+With no query parameter, all products are returned. An unmatched category returns an empty list.
 
-**4. Modular Code**
-- Keep logic clean and organized. As your API grows, consider separating routes into blueprints and data into separate modules.
+### `GET /products/<id>`
 
----
+Returns a single product by its integer ID.
+
+**Example:** `GET /products/1`
+
+**Example response (200):**
+```json
+{
+  "id": 1,
+  "name": "Laptop",
+  "price": 899.99,
+  "category": "electronics"
+}
+```
+
+**If the ID doesn't exist (404):**
+```json
+{
+  "error": "Product not found"
+}
+```
+
+## Testing
+
+The project includes a pytest suite covering all three routes.
+
+```bash
+pytest
+```
+
+All tests pass, covering:
+- Homepage returns a 200 with a welcome message
+- `/products` returns a list of all products
+- Category filtering behaves as expected
+- `/products/<id>` returns the correct product or a 404 for an invalid ID
+
+## Implementation Notes
+
+- Mock data lives in `data.py` and is imported into `app.py`, keeping data separate from route logic.
+- All responses use `jsonify()` to ensure consistent JSON formatting and the correct `Content-Type` header.
+- Category filtering normalizes both the query parameter and stored data with `.lower()` to avoid case-sensitivity mismatches.
+- The `/products/<int:product_id>` route uses Flask's `int` converter, so non-numeric IDs are automatically rejected by Flask's routing before reaching the view function.
+- HTTP status codes are explicit where it matters: `200` for successful lookups, `404` when a product ID isn't found.
 
 ## Conclusion
 
-After completing this lab, you will:
-
-✅ Understand RESTful GET route structure  
-✅ Build routes that serve both collections and single resources  
-✅ Use query strings to filter results  
-✅ Return structured JSON and meaningful HTTP responses  
-
-This lays the foundation for full CRUD APIs in the next module.
+This lab covers the foundation of building read-only RESTful routes in Flask: serving collections, filtering with query strings, retrieving single resources by dynamic route segments, and returning well-structured JSON with correct status codes. This sets up the foundation for full CRUD APIs in the next module.

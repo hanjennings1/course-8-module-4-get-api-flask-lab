@@ -8,7 +8,7 @@ app = Flask(__name__)
 @app.route("/")
 def home():
     # Return a welcome message
-    return jsonify({"message": "Welcome to the Product Catalog API!"})
+    return jsonify({"message": "Welcome to the Product Catalog API!"}), 200
 
 
 #Implement GET /products route that returns all products or filters by category
@@ -21,7 +21,7 @@ def get_products():
         filtered = [p for p in products if p["category"].lower() == category.lower()]
         return jsonify(filtered)
     # No filter provided — return all products
-    return jsonify(products)
+    return jsonify(products), 200
 
 
 # Implement GET /products/<id> route that returns a specific product by ID or 404
